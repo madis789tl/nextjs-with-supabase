@@ -1,8 +1,48 @@
 import { createClient } from "@/utils/supabase/server";
 import { formatDate } from "@/utils/utils";
 import { Todo } from "./TodoClient";
+import { revalidatePath } from "next/cache";
+import { Button } from "../ui/button";
 
 const supabase = createClient();
+
+export default async function TodoServer({ todos }: { todos: Todo[] }) {
+  async function deleteTodo(id: Number) {
+    "use server";
+    const supabase = createClient();
+
+    const { data, error } = await supabase
+      .from("todo")
+      .update({ deleted: new Date() })
+      .eq("id", id)
+      .select();
+
+    // if (error) {
+    //   console.error("Error deleting todo:", error);
+    // } else {
+    //   console.log("Todo deleted:", data);
+    // }
+
+    /*if (data) {
+      return revalidatePath("/todo");
+    }*/
+    revalidatePath("/todo");
+    return { data };
+  }
+
+  async function updateTodo(id: Number) {
+    "use server";
+    const supabase = createClient();
+
+    const { data, error } = await supabase
+      .from("todo")
+      .update({ deleted: new Date() })
+      .eq("id", id)
+      .select();
+    revalidatePath("/todo");
+    return { data };
+  }
+
 
 export default async function TodoServer({ todos }: { todos: Todo[] }) {
   // Delete is not possible in server components. Needs state.
